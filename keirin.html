@@ -142,6 +142,12 @@ canvas.cmc{width:100%;image-rendering:pixelated;border-radius:10px;display:block
 .cmcopy{font-size:20px;margin:10px 0 4px}
 .cmsp{font-size:11px;color:var(--muted)}
 .cmcount{font-size:13px;color:var(--gold);margin-top:8px;font-family:"DotGothic16",monospace}
+/* オッズ表 */
+.otab{table-layout:fixed;font-family:"DotGothic16",monospace}.otab th,.otab td{padding:5px 0;text-align:center;font-size:11px;border:1px solid var(--line)}
+.otab th .waku{width:20px;height:20px;font-size:11px}.otab thead th:first-child{font-size:9px;font-family:inherit;color:var(--muted)}
+.oc{cursor:pointer;color:var(--text)}.oc.na{background:#0b1529;cursor:default}.oc.h10,.pi.h10 b,.h10t{color:var(--gold)}.oc.h3{background:#5a1f26;color:#ffd0d0;font-weight:700}.h3t{color:#ff9a9a}
+.fpick{display:grid;grid-template-columns:auto repeat(9,1fr);gap:3px;align-items:center;margin-bottom:8px}.fpick .bb{height:36px}
+.plist{display:grid;grid-template-columns:1fr 1fr;gap:4px}.pi{display:flex;align-items:center;gap:6px;background:var(--panel2);border-radius:8px;padding:5px 7px;cursor:pointer}.pi small{color:var(--muted);width:18px;font-size:10px}.pi span{display:flex;gap:1px}.pi .waku{width:20px;height:20px;font-size:11px}.pi b{margin-left:auto;font-family:"DotGothic16",monospace}.pi.h3{background:#5a1f26}.pi.h3 b{color:#ffd0d0}
 /* 選手ページ・名鑑 */
 .rl{cursor:pointer;text-decoration:underline dotted #5a7299;text-underline-offset:3px}
 .rhead{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:13px;color:var(--muted);margin:-4px 0 10px}
@@ -212,7 +218,7 @@ table.roster tr{cursor:pointer}
     </div>
 
     <div class="card" id="betCard">
-      <h2>車券を買う</h2>
+      <div class="ehd"><h2>車券を買う</h2><button class="chip" id="oddsBtn">📋 オッズ表</button></div>
       <div class="tabs" id="tabs"></div>
       <div class="seg" id="seg"></div>
       <p class="hint" id="hint"></p>
@@ -1083,6 +1089,57 @@ $('chips').onclick = e => {
   renderPreview();
 };
 $('amtReset').onclick = () => { $('amount').value = 100; renderPreview(); };
+// ===== オッズ表 =====
+let oddsT = 'st', oddsV = 'grid', oddsFirst = 1, oddsSeed = null;
+const fmtO = o => o >= 1000 ? Math.floor(o).toString() : o.toFixed(1);
+function showOdds() {
+  if (!race) return;
+  if (oddsSeed !== race.seed) { oddsSeed = race.seed; oddsFirst = race.riders.find(r => r.pop === 1).no; }
+  const bt = btById(oddsT), od = race.odds[oddsT];
+  const sorted = Object.keys(od).sort((a, b) => od[a] - od[b]);
+  const rank = {}; sorted.forEach((k, i) => rank[k] = i + 1);
+  const cell = k => { if (od[k] == null) return '<td class="oc na"></td>'; const r = rank[k];
+    return `<td class="oc ${r <= 3 ? 'h3' : r <= 10 ? 'h10' : ''}" data-k="${k}">${fmtO(od[k])}</td>`; };
+  const N9 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  let body = '';
+  if (oddsV === 'pop') {
+    const n = oddsT === 'st' ? 60 : sorted.length;
+    body = `<div class="plist">${sorted.slice(0, n).map((k, i) => `<div class="pi ${i < 3 ? 'h3' : i < 10 ? 'h10' : ''}" data-k="${k}"><small>${i + 1}</small><span>${k.split(/[-=]/).map(wk).join('')}</span><b>${fmtO(od[k])}</b></div>`).join('')}</div>`
+      + (oddsT === 'st' ? '<p class="hint" style="margin-top:6px">人気上位60点を表示。全部見るときは「表」で1着ごとに。</p>' : '');
+  } else if (oddsT === 'st') {
+    body = `<div class="fpick"><span class="sub" style="display:inline">1着</span>${N9.map(n => `<button class="bb ${n === oddsFirst ? 'on' : ''}" data-f="${n}">${wk(n)}</button>`).join('')}</div>
+      <table class="otab"><thead><tr><th>2着＼3着</th>${N9.filter(n => n !== oddsFirst).map(n => `<th>${wk(n)}</th>`).join('')}</tr></thead><tbody>
+      ${N9.filter(a => a !== oddsFirst).map(a => `<tr><th>${wk(a)}</th>${N9.filter(b => b !== oddsFirst).map(b => b === a ? '<td class="oc na"></td>' : cell(ENG.keyO([oddsFirst, a, b]))).join('')}</tr>`).join('')}</tbody></table>`;
+  } else if (oddsT === 'sf') {
+    body = '<p class="hint">3連複は表にしにくいので、人気順で全84通りを表示します。</p>';
+    body += `<div class="plist">${sorted.map((k, i) => `<div class="pi ${i < 3 ? 'h3' : i < 10 ? 'h10' : ''}" data-k="${k}"><small>${i + 1}</small><span>${k.split('=').map(wk).join('')}</span><b>${fmtO(od[k])}</b></div>`).join('')}</div>`;
+  } else {
+    const ord = bt.ordered;
+    body = `<table class="otab"><thead><tr><th>${ord ? '1着＼2着' : ''}</th>${N9.map(n => `<th>${wk(n)}</th>`).join('')}</tr></thead><tbody>
+      ${N9.map(a => `<tr><th>${wk(a)}</th>${N9.map(b => a === b || (!ord && b < a) ? '<td class="oc na"></td>' : cell(ord ? ENG.keyO([a, b]) : ENG.keyU([a, b]))).join('')}</tr>`).join('')}</tbody></table>`;
+  }
+  openModal(`<h3>📋 オッズ表 <button class="ibtn" data-close>閉じる</button></h3>
+    <div class="tabs" id="oTabs">${BT.map(b => `<button class="tab ${b.id === oddsT ? 'on' : ''}" data-ot="${b.id}">${b.name}</button>`).join('')}</div>
+    ${oddsT !== 'sf' ? `<div class="seg" style="grid-template-columns:1fr 1fr" id="oView"><button class="tab ${oddsV === 'grid' ? 'on' : ''}" data-ov="grid">表</button><button class="tab ${oddsV === 'pop' ? 'on' : ''}" data-ov="pop">人気順</button></div>` : ''}
+    <p class="hint">${race.label} ${raceName(race.no)}　<span class="h3t">赤</span>＝1〜3番人気　<span class="h10t">金</span>＝4〜10番人気<br>数字をタップすると、その買い目をマークシートに入れます。</p>
+    ${body}`);
+  const box = $('sheetBox');
+  box.onclick = e => {
+    const t = e.target.closest('[data-ot]'); if (t) { oddsT = t.dataset.ot; showOdds(); return; }
+    const v = e.target.closest('[data-ov]'); if (v) { oddsV = v.dataset.ov; showOdds(); return; }
+    const f = e.target.closest('[data-f]'); if (f) { oddsFirst = +f.dataset.f; showOdds(); return; }
+    const c = e.target.closest('[data-k]'); if (c && phase === 'bet') pickFromOdds(oddsT, c.dataset.k);
+  };
+}
+function pickFromOdds(id, k) {
+  const ns = k.split(/[-=]/).map(Number), b = btById(id);
+  curType = b; curMode = 'normal'; rows = [[], [], []];
+  if (b.ordered) ns.forEach((n, i) => rows[i] = [n]); else rows[0] = ns;
+  closeModal(); renderTabs(); renderSheet();
+  $('betCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  toast(`${b.name} ${k} をマークしました。金額を決めて「この車券を買う」へ`);
+}
+
 function buy(bt, md, keys, label) {
   const unit = unitVal();
   if (unit < 100) { toast('1点100円単位で入力してください'); return false; }
@@ -1311,6 +1368,7 @@ function showStats() {
   $('resetStats').onclick = () => confirmBox('成績をリセットしますか？　所持金はそのままです。', 'リセットする', () => { S.stats = newStats(); S.broke = 0; if (mode === 'rich') S.maxAsset = S.bal; saveMode(); toast('成績をリセットしました'); });
 }
 $('statsBtn').onclick = showStats;
+$('oddsBtn').onclick = showOdds;
 $('rosterOpen').onclick = () => showRoster('SS');
 $('rosterBtn').onclick = () => showRoster('SS');
 $('dayRestart').onclick = () => confirmBox('今の挑戦をやめて、新しい12レースで最初からやり直しますか？　今回の所持金は記録されません。', 'やり直す', () => { S.groups = []; restartDay(); });
@@ -1431,7 +1489,7 @@ function shareX(text) {
 
 // ===== モーダル・トースト =====
 let modalLock = false;
-function openModal(html, opt = {}) { $('sheetBox').innerHTML = html; $('modal').classList.remove('hidden'); $('modal').classList.toggle('center', !!opt.center); modalLock = !!opt.lock; }
+function openModal(html, opt = {}) { $('sheetBox').onclick = null; $('sheetBox').innerHTML = html; $('modal').classList.remove('hidden'); $('modal').classList.toggle('center', !!opt.center); modalLock = !!opt.lock; }
 function closeModal() { $('modal').classList.add('hidden'); $('sheetBox').innerHTML = ''; modalLock = false; }
 $('modal').onclick = e => { if (e.target.closest('[data-close]') || (e.target === $('modal') && !modalLock)) closeModal(); };
 function confirmBox(msg, ok, cb) {
