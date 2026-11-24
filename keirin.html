@@ -142,6 +142,20 @@ canvas.cmc{width:100%;image-rendering:pixelated;border-radius:10px;display:block
 .cmcopy{font-size:20px;margin:10px 0 4px}
 .cmsp{font-size:11px;color:var(--muted)}
 .cmcount{font-size:13px;color:var(--gold);margin-top:8px;font-family:"DotGothic16",monospace}
+/* 選手ページ・名鑑 */
+.rl{cursor:pointer;text-decoration:underline dotted #5a7299;text-underline-offset:3px}
+.rhead{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:13px;color:var(--muted);margin:-4px 0 10px}
+.cls.SS{background:linear-gradient(90deg,#fff3b0,#f2c94c,#fff3b0);color:#3a2a00;box-shadow:0 0 0 1px #fff6}
+.mv{font-size:11px;font-weight:800;margin-left:4px}.mv.up{color:#ff8f8f}.mv.dn{color:#7fb2ff}
+.kimrow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.kimrow div{background:var(--panel2);border-radius:8px;padding:6px;text-align:center}.kimrow small{display:block;color:var(--muted);font-size:11px}.kimrow b{font-family:"DotGothic16",monospace;font-size:17px}
+.kimbar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin-top:6px}
+.recent{display:flex;flex-wrap:wrap;gap:5px}.rc{background:var(--panel2);border-radius:8px;padding:4px 6px;text-align:center;min-width:44px}.rc small{display:block;font-size:10px;color:var(--muted);line-height:1.3}.rc .km{color:var(--cyan)}
+.pl{font-family:"DotGothic16",monospace;font-size:15px}.pl.p1{color:var(--gold)}.pl.p2{color:#dfe6ef}.pl.p3{color:#e0a46a}.pl.px{color:var(--red)}.rc .pl:not(.p1):not(.p2):not(.p3):not(.px){color:var(--muted)}
+.spark{width:100%;height:60px;display:block;background:var(--panel2);border-radius:8px}.sparkax{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+.prow{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}.prow small{color:var(--muted)}
+.ctabs{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:8px 0}.ctabs .tab{padding:6px 2px;font-size:13px;display:flex;flex-direction:column;align-items:center;line-height:1.2}.ctabs .tab small{font-size:10px;font-weight:400}
+table.roster tr{cursor:pointer}
+.ehd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.ehd h2{margin:0!important}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:25;width:100%;height:100%}
 .jack{position:fixed;left:0;right:0;top:35%;text-align:center;font-family:"DotGothic16",monospace;font-size:48px;color:var(--gold);text-shadow:0 4px 0 #6b4a00,0 0 20px #000;z-index:26;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
@@ -166,6 +180,7 @@ canvas.cmc{width:100%;image-rendering:pixelated;border-radius:10px;display:block
     <div id="modeList"></div>
     <div id="acct" class="acct"></div>
     <button class="btn ghost" id="rankOpen">🏆 今日のランキング（1日モード）</button>
+    <button class="btn ghost" id="rosterOpen" style="margin-top:10px">👤 選手名鑑（500人）</button>
   </section>
 
   <!-- ゲーム画面 -->
@@ -188,7 +203,7 @@ canvas.cmc{width:100%;image-rendering:pixelated;border-radius:10px;display:block
     </div>
 
     <div class="card" id="entryCard">
-      <h2>出走表</h2>
+      <div class="ehd"><h2>出走表 <small style="font-weight:400">（名前をタップで選手ページ）</small></h2><button class="chip" id="rosterBtn">👤 名鑑</button></div>
       <div class="narabi"><span class="sub" style="display:inline">並び予想</span> <span id="narabi"></span></div>
       <table>
         <thead><tr><th>車</th><th>選手</th><th>級班<br>脚質</th><th class="num">得点<br>B</th><th class="num">2連<br>対率</th><th class="num">人気<br>1着率</th></tr></thead>
@@ -269,8 +284,8 @@ const ENG = (() => {
     return r;
   }
   const N=9;
-  const SEI=['赤坂','岩永','大塚','小倉','片岡','北川','黒田','小松','坂口','佐野','柴田','新田','杉本','関口','高木','田村','長尾','中島','西岡','野口','橋本','早川','平井','藤原','松岡','宮下','村井','森本','山口','吉村','和田','今泉','久保','清水','堀','内藤'];
-  const MEI=['健太','翔太','大樹','拓也','雄一','裕介','直樹','亮','俊','剛','誠','健','隆之','康平','匠','颯','蓮','慎吾','智之','将','輝','優','航','大地','一真','龍'];
+  const SEI=['赤坂','岩永','大塚','小倉','片岡','北川','黒田','小松','坂口','佐野','柴田','新田','杉本','関口','高木','田村','長尾','中島','西岡','野口','橋本','早川','平井','藤原','松岡','宮下','村井','森本','山口','吉村','和田','今泉','久保','清水','堀','内藤','青木','石井','上田','遠藤','大西','加藤','川口','菊地','工藤','近藤','斎藤','酒井','島田','菅原','竹内','千葉','土屋','中野','原田','福田','前田','増田','三浦','水野','森田','安田','横山','渡辺'];
+  const MEI=['健太','翔太','大樹','拓也','雄一','裕介','直樹','亮','俊','剛','誠','健','隆之','康平','匠','颯','蓮','慎吾','智之','将','輝','優','航','大地','一真','龍','大輔','和也','達也','雄太','光','陸','悠斗','圭','崇','学'];
   const AREA={
     '北日本':['青森','岩手','宮城','福島','北海道'],'関東':['茨城','栃木','群馬','埼玉'],'南関東':['千葉','東京','神奈川','静岡'],
     '中部':['富山','石川','岐阜','愛知','三重'],'近畿':['福井','京都','奈良','大阪','兵庫','和歌山'],'中国':['岡山','広島','山口'],
@@ -311,7 +326,7 @@ const ENG = (() => {
         const r={name:sei+' '+rng.pick(MEI), pref:rng.pick(AREA[area]), area, cls:c, score, type, ki, age, pow,
           gear: rng()<0.8?'3.92':rng.pick(['3.93','4.00','3.85','4.07']),
           ren2: Math.round(clamp(15+(score-(cls==='S'?100:80))*2.2+rng.gauss()*8,3,75)*10)/10,
-          back: type==='逃'?rng.int(6,22):type==='両'?rng.int(2,12):rng.int(0,3), line:li, pos:k};
+          back: type==='逃'?rng.int(6,22):type==='両'?rng.int(2,12):rng.int(0,3), line:li, pos:k, q:score};
         riders.push(r); line.push(r);
       }
       lines.push(line);
@@ -329,7 +344,7 @@ const ENG = (() => {
     const rd=n=>field.riders[n-1];
     const lines=field.lines.map(l=>l.filter(n=>n!==excl)).filter(l=>l.length);
     const F0=rng.shuffle(lines.map((_,i)=>i));
-    const z=n=>(rd(n).score-field.base)/8;
+    const z=n=>(rd(n).q-field.base)/8;
     const pw=li=>{ const n=lines[li][0], r=rd(n); return r.pow + (r.type==='追'?-0.5:0) + (lines[li][0]!==field.lines.find(l=>l.includes(n))[0]?-0.6:0); };
     // 主導権
     const wA=lines.map((l,i)=>Math.exp(1.5*pw(i)+0.25*(l.length-1)+(rd(l[0]).type==='逃'?0.7:0)+rng.gauss()*0.4));
@@ -373,7 +388,7 @@ const ENG = (() => {
     const cnt={}; const w1=Array(N+1).fill(0);
     for(let i=0;i<NS;i++){ const o=sim(field,rng).order; const k=keyO(o.slice(0,3)); cnt[k]=(cnt[k]||0)+1; w1[o[0]]++; }
     // PLで平滑化
-    const ps=field.riders.map(r=>Math.exp((r.score-field.base)/8*0.4)); const S=ps.reduce((a,b)=>a+b,0); const p=ps.map(v=>v/S);
+    const ps=field.riders.map(r=>Math.exp((r.q-field.base)/8*0.4)); const S=ps.reduce((a,b)=>a+b,0); const p=ps.map(v=>v/S);
     const pr={nt:{},nf:{},kf:{},st:{},sf:{}}, ALPHA=400;
     for(let i=0;i<N;i++) for(let j=0;j<N;j++){ if(j===i)continue; for(let k=0;k<N;k++){ if(k===i||k===j)continue;
       const q=p[i]*p[j]/(1-p[i])*p[k]/(1-p[i]-p[j]);
@@ -391,7 +406,7 @@ const ENG = (() => {
   function genRace(seed, opts={}){
     const rng=makeRng(seed);
     const cls=opts.cls||'A';
-    const field=genField(rng,cls);
+    const field=opts.field||genField(rng,cls);
     field.base = cls==='S'?108:87;
     const {pr,win}=computeProbs(field, makeRng(seed+'mc'), opts.ns||9000);
     const odds={};
@@ -417,7 +432,7 @@ const ENG = (() => {
   function makeYoso(rng, field, win){
     const rd=n=>field.riders[n-1];
     // 一番強いラインを本線に
-    const ls=field.lines.map(l=>({l, v:rd(l[0]).pow*1.2+l.reduce((a,n)=>a+(rd(n).score-field.base)/5,0)/l.length+(l.length-1)*0.25+rng.gauss()*0.4})).sort((a,b)=>b.v-a.v);
+    const ls=field.lines.map(l=>({l, v:rd(l[0]).pow*1.2+l.reduce((a,n)=>a+(rd(n).q-field.base)/5,0)/l.length+(l.length-1)*0.25+rng.gauss()*0.4})).sort((a,b)=>b.v-a.v);
     const main=ls[0].l, sec=ls[1]?ls[1].l:[];
     const lead=main[0], ban=main[1]||sec[0], third=main[2]||sec[0]||ls[2].l[0];
     const other=sec[0]!==ban?sec[0]:(ls[2]?ls[2].l[0]:third);
@@ -455,7 +470,7 @@ const ENG = (() => {
     if(race.acc && race.acc.type==='KET' && ns.includes(race.acc.no)) return 'refund';
     return winKeys(race)[btId].includes(key)?'win':'lose';
   }
-  return {makeRng, hashStr, genRace, sim, combos, winKeys, judge, payout, per100, BET_TYPES, keyO, keyU, keyOf, MARGINS};
+  return {makeRng, hashStr, genRace, sim, kimarite, SEI, MEI, AREA, AREAS, PATTERNS, combos, winKeys, judge, payout, per100, BET_TYPES, keyO, keyU, keyOf, MARGINS};
 })();
 
 // ===== 競輪レース画面（インフィールドから追うカメラの側面視点） =====
@@ -797,7 +812,164 @@ const rLabel = () => { if (mode === 'day') return S.raceNo + 'R'; const r = ((S.
 const rNum = () => mode === 'day' ? S.raceNo : ((S.raceNo - 1) % 12) + 1;
 const raceName = n => n === 12 ? 'S級決勝' : n === 11 ? 'S級準決勝' : n >= 9 ? 'S級特選' : n >= 7 ? 'S級予選' : n >= 5 ? 'A級準決勝' : 'A級予選';
 const seedNow = () => mode === 'day' ? `day:${S.day.date}:${S.day.seed || ''}:${S.raceNo}` : `${mode}:${S.seed}:${S.raceNo}`;
-function makeRace() { const n = rNum(); race = ENG.genRace(seedNow(), { cls: n >= 7 ? 'S' : 'A' }); const w = ENG.makeRng(seedNow() + 'w'); race.wx = { sky: w.pick(['晴', '晴', '曇', '雨']), wind: w.int(0, 5), dir: w.pick(['ホーム追い風', 'バック追い風', '横風']) }; race.no = n; race.label = rLabel(); }
+function makeRace() { const n = rNum(), key = seedNow(); const saved = S.pick && S.pick.k === key ? S.pick : null; const f = World.field(key, n, saved); if (!saved) { S.pick = { k: key, ids: f.saved.ids, lines: f.saved.lines }; saveMode(); } race = ENG.genRace(key, { cls: n >= 7 ? 'S' : 'A', field: f.field }); const w = ENG.makeRng(seedNow() + 'w'); race.wx = { sky: w.pick(['晴', '晴', '曇', '雨']), wind: w.int(0, 5), dir: w.pick(['ホーム追い風', 'バック追い風', '横風']) }; race.no = n; race.label = rLabel(); }
+
+// ===== 選手名簿と「自分だけの競輪界」 =====
+// 500人の顔ぶれは固定（全員共通）。級班・競走得点・通算成績は端末に保存し、遊んだレースで進む。
+const World = (() => {
+  const KEY = 'keirin_world_v1', PERIOD = 60, BG = 10;
+  const ORDER = ['SS', 'S1', 'S2', 'A1', 'A2', 'A3'];
+  const SIZE = { SS: 9, S1: 60, S2: 90, A1: 120, A2: 110, A3: 111 };
+  const ABIL = { SS: [115, 121], S1: [107, 116], S2: [100, 109], A1: [91, 98], A2: [85, 92], A3: [76, 86] };
+  // 出走する級班の重み（レースの格ごと）
+  const WT = {
+    'A級予選': { A1: 0.4, A2: 1, A3: 1 }, 'A級準決勝': { A1: 1, A2: 0.7, A3: 0.2 },
+    'S級予選': { S1: 0.5, S2: 1 }, 'S級特選': { SS: 0.5, S1: 1, S2: 0.3 },
+    'S級準決勝': { SS: 0.7, S1: 1, S2: 0.3 }, 'S級決勝': { SS: 1, S1: 1 },
+  };
+  const PB = { 'A級予選': 86, 'A級準決勝': 89, 'S級予選': 104, 'S級特選': 108, 'S級準決勝': 108, 'S級決勝': 112 };
+  const SHORT = { 'A級予選': 'A予', 'A級準決勝': 'A準', 'S級予選': 'S予', 'S級特選': '特選', 'S級準決勝': 'S準', 'S級決勝': '決勝' };
+  const BONUS = [10, 6, 3, 1, -1, -3, -5, -7, -9];
+  const KIM = ['逃げ', '捲り', '差し', 'マーク'];
+  const r2 = v => Math.round(v * 100) / 100;
+
+  // ---- 500人の名簿（固定の種から作るので、誰が遊んでも同じ顔ぶれ） ----
+  const ROSTER = (() => {
+    const rng = ENG.makeRng('pocket-roster-v1'), names = new Set(), out = [];
+    ORDER.forEach(c => {
+      for (let i = 0; i < SIZE[c]; i++) {
+        let name; do { name = rng.pick(ENG.SEI) + ' ' + rng.pick(ENG.MEI); } while (names.has(name)); names.add(name);
+        const area = rng.pick(ENG.AREAS), x = rng();
+        const type = x < 0.3 ? '逃' : x < 0.6 ? '両' : '追';
+        const ki = c === 'SS' ? rng.int(85, 117) : rng.int(80, 127);
+        const q = r2(rng.range(...ABIL[c]));
+        out.push({ id: out.length, name, area, pref: rng.pick(ENG.AREA[area]), type, ki,
+          age: Math.max(20, Math.min(58, Math.round(20 + (127 - ki) * 0.45 + rng.range(0, 6)))),
+          gear: rng() < 0.8 ? '3.92' : rng.pick(['3.93', '4.00', '3.85', '4.07']),
+          q, pn: rng.gauss(), c0: c, s0: r2(q + rng.gauss() * 1.2) });
+      }
+    });
+    return out;
+  })();
+
+  // ---- 保存データ ----
+  let W = null;
+  const fresh = () => ({ v: 1, races: 0, period: 1, news: null, r: ROSTER.map(x => ({ c: x.c0, s: x.s0, st: 0, w: [0, 0, 0], o: 0, k: [0, 0, 0, 0], b: 0, a: 0, L: [], P: {}, h: [], ch: [] })) });
+  function load() {
+    if (W) return W;
+    try { W = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { W = null; }
+    if (!W || W.v !== 1 || !Array.isArray(W.r) || W.r.length !== ROSTER.length) W = fresh();
+    return W;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(W)); } catch (e) {} }
+  function reset() { W = fresh(); save(); }
+
+  // ---- レースに出る1人分の情報 ----
+  function mk(id, no, li, pos, isS) {
+    const R = ROSTER[id], st = load().r[id], base = isS ? 108 : 87;
+    const est = Math.max(3, Math.min(75, 15 + (R.q - (isS ? 100 : 80)) * 2.2 + R.pn * 8));
+    return { id, no, line: li, pos, name: R.name, pref: R.pref, area: R.area, type: R.type, ki: R.ki, age: R.age, gear: R.gear,
+      cls: st.c, score: st.s, q: R.q,
+      pow: (R.q - base) / 9 + (R.type === '逃' ? 0.5 : R.type === '両' ? 0.25 : -0.6) + R.pn * 0.25,
+      ren2: st.st >= 3 ? Math.round((st.w[0] + st.w[1]) / st.st * 1000) / 10 : Math.round(est * 10) / 10,
+      back: st.b };
+  }
+  function build(saved, n) {
+    const isS = n >= 7, riders = [];
+    saved.lines.forEach((l, li) => l.forEach((no, k) => riders.push(mk(saved.ids[no - 1], no, li, k, isS))));
+    riders.sort((a, b) => a.no - b.no);
+    return { riders, lines: saved.lines.map(l => [...l]) };
+  }
+  // ---- 出走メンバー選び（同じ地区でラインを組む） ----
+  function choose(seed, n) {
+    load();
+    const rng = ENG.makeRng(seed + 'pick'), w = WT[raceName(n)];
+    const wOf = id => w[W.r[id].c] || 0;
+    const elig = ROSTER.filter(R => wOf(R.id) > 0);
+    const wpick = (arr, f) => { const ws = arr.map(f), t = ws.reduce((a, b) => a + b, 0); let x = rng() * t; for (let i = 0; i < arr.length; i++) { x -= ws[i]; if (x <= 0) return arr[i]; } return arr[arr.length - 1]; };
+    const used = new Set(), groups = [];
+    const pat = rng.pick(ENG.PATTERNS), areas = rng.shuffle(ENG.AREAS), usedA = new Set();
+    pat.forEach(k => {
+      let line = null;
+      for (const A of areas) {
+        if (usedA.has(A)) continue;
+        const c = elig.filter(R => R.area === A && !used.has(R.id)), ld = c.filter(R => R.type !== '追');
+        if (c.length < k || (k > 1 && !ld.length)) continue;
+        usedA.add(A);
+        const lead = k > 1 ? wpick(ld, R => wOf(R.id)) : wpick(c, R => wOf(R.id));
+        const rest = c.filter(R => R !== lead), fol = [];
+        for (let i = 1; i < k; i++) { const f = wpick(rest.filter(R => !fol.includes(R)), R => wOf(R.id) * (R.type === '追' ? 2 : 1)); fol.push(f); }
+        fol.sort((a, b) => b.q - a.q);
+        line = [lead, ...fol]; break;
+      }
+      if (!line) { line = []; for (let i = 0; i < k; i++) line.push(wpick(elig.filter(R => !used.has(R.id) && !line.includes(R)), R => wOf(R.id))); }
+      line.forEach(R => used.add(R.id)); groups.push(line);
+    });
+    const nos = rng.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]), ids = Array(9);
+    let i = 0; const lines = groups.map(g => g.map(R => { const no = nos[i++]; ids[no - 1] = R.id; return no; }));
+    return { ids, lines };
+  }
+  // 遊ぶレースの出走メンバー（saved があればそれを使う：途中で閉じたレースの再現用）
+  function field(seed, n, saved) { const sv = saved || choose(seed, n); return { saved: sv, field: build(sv, n) }; }
+
+  // ---- 1レース分の結果を書き込む ----
+  function apply(race, n) {
+    const nm = raceName(n), pb = PB[nm], acc = race.acc;
+    const place = {}; race.order.forEach((no, i) => place[no] = i + 1);
+    race.riders.forEach(rd => {
+      const st = W.r[rd.id], no = rd.no;
+      if (acc && acc.type === 'KET' && acc.no === no) { st.L.unshift(['欠', SHORT[nm]]); st.L = st.L.slice(0, 10); return; }
+      const bad = acc && acc.no === no && (acc.type === 'RAK' || acc.type === 'SIK');
+      const p = bad ? 9 : place[no];
+      st.st++;
+      if (bad) { st.a++; st.o++; } else if (p <= 3) st.w[p - 1]++; else st.o++;
+      if (p === 1) { const k = KIM.indexOf(race.kim[no]); if (k >= 0) st.k[k]++; }
+      if (race.story.B === no) st.b++;
+      const pts = bad ? pb - 12 : pb + BONUS[p - 1];
+      st.s = r2(st.s + (pts - st.s) / 8);
+      st.L.unshift([bad ? { RAK: '落', SIK: '失' }[acc.type] : p, SHORT[nm], p === 1 ? race.kim[no] : '']); st.L = st.L.slice(0, 10);
+    });
+    race.lines.forEach(l => { if (l.length < 2) return; l.forEach(a => l.forEach(b => { if (a === b) return;
+      const P = W.r[race.riders[a - 1].id].P, k = race.riders[b - 1].id; P[k] = (P[k] || 0) + 1;
+      const ks = Object.keys(P); if (ks.length > 24) { ks.sort((x, y) => P[x] - P[y]).slice(0, ks.length - 16).forEach(x => delete P[x]); } })); });
+  }
+  // 見ていない裏のレース（他の選手も走って成績が進む）
+  function background() {
+    const rng = ENG.makeRng(Math.random().toString(36).slice(2));
+    for (let i = 0; i < BG; i++) {
+      const n = rng() < 0.6 ? rng.int(1, 6) : rng.int(7, 12);
+      const f = build(choose('bg' + rng(), n), n); f.base = n >= 7 ? 108 : 87;
+      const s = ENG.sim(f, rng), kim = {}; s.order.slice(0, 3).forEach((no, j) => kim[no] = ENG.kimarite(s, no, j, s.order));
+      apply({ riders: f.riders, lines: f.lines, order: s.order, kim, story: s, acc: null }, n);
+    }
+  }
+  // ---- 期替わり：級班の入れ替え ----
+  function review() {
+    const news = [];
+    W.r.forEach(st => { st.h.push(st.s); st.h = st.h.slice(-12); });
+    const of = c => W.r.map((st, id) => ({ st, id })).filter(x => x.st.c === c);
+    const moves = [];
+    [['SS', 'S1', 2, true], ['S1', 'S2', 6], ['S2', 'A1', 8], ['A1', 'A2', 8], ['A2', 'A3', 8]].forEach(([up, lo, k, cond]) => {
+      const dn = of(up).sort((a, b) => a.st.s - b.st.s).slice(0, k), upc = of(lo).sort((a, b) => b.st.s - a.st.s).slice(0, k);
+      for (let i = 0; i < k; i++) { if (cond && !(upc[i].st.s > dn[i].st.s)) continue; moves.push([upc[i].id, lo, up], [dn[i].id, up, lo]); }
+    });
+    moves.forEach(([id, from, to]) => { W.r[id].c = to; W.r[id].ch.push([W.period, from, to]); news.push({ id, from, to }); });
+    W.period++; W.news = { period: W.period, list: news };
+    return W.news;
+  }
+  // 遊んだレースの精算時に呼ぶ
+  function record(race, n) {
+    load(); apply(race, n); background();
+    W.races++; let news = null;
+    if (W.races % PERIOD === 0) news = review();
+    save(); return news;
+  }
+
+  const get = id => ({ ...ROSTER[id], ...load().r[id] });
+  const left = () => PERIOD - (load().races % PERIOD);
+  return { ROSTER, ORDER, SIZE, KIM, load, save, reset, field, record, get, left, PERIOD,
+    period: () => load().period, news: () => load().news, races: () => load().races };
+})();
 
 // ===== 精算 =====
 function settle(r, groups) {
@@ -823,12 +995,13 @@ function settle(r, groups) {
   S.bal += pay + ref;
   if (mode === 'rich') S.maxAsset = Math.max(S.maxAsset || 0, S.bal);
   if (mode === 'day') { if (pay > 0) S.day.hits++; const best = out.flatMap(g => g.keys.filter(k => g.st[k] === 'win').map(k => ({ amt: ENG.payout(g.unit, g.odds[k]), type: btById(g.bt).name, key: k, race: r.label }))).sort((a, b) => b.amt - a.amt)[0]; if (best && (!S.day.best || best.amt > S.day.best.amt)) S.day.best = best; }
+  const news = World.record(r, r.no);
   // 次のレースへ進める（リロードしてもやり直せない）
   const wasFinal = mode === 'day' && S.raceNo >= 12;
   S.raceNo++; S.seed = randSeed(); S.groups = []; S.racing = false;
   if (wasFinal) S.day.finished = true;
   saveMode();
-  return { groups: out, spent, pay, ref, yHit, race: r, wasFinal };
+  return { groups: out, spent, pay, ref, yHit, race: r, wasFinal, news };
 }
 
 // ===== 画面：出走表など =====
@@ -842,7 +1015,7 @@ function renderRace() {
   $('rmeta').textContent = `${CONFIG.VENUE}（400m） ・ 2025m 5周 ・ ${race.wx.sky} ・ ${race.wx.dir}${race.wx.wind}m` + (mode === 'day' ? ` ・ 本日 ${S.raceNo}/12R` : '');
   $('narabi').innerHTML = lineHTML(race.lines);
   $('entries').innerHTML = race.riders.map(b => `<tr><td>${wk(b.no)}</td>
-    <td><span class="rname2">${b.name}</span><span class="sub">${b.pref} ${b.age}歳 ${b.ki}期</span></td>
+    <td><span class="rname2 rl" data-rid="${b.id}">${b.name}</span><span class="sub">${b.pref} ${b.age}歳 ${b.ki}期</span></td>
     <td><span class="cls ${b.cls}">${b.cls}</span><span class="sub"><b style="color:${TYPE_C[b.type]}">${b.type}</b> ${b.gear}</span></td>
     <td class="num">${b.score.toFixed(2)}<span class="sub">B${b.back}</span></td>
     <td class="num">${b.ren2.toFixed(1)}<span class="sub">%</span></td>
@@ -992,16 +1165,20 @@ function showResult(res) {
     const b = r.riders[n - 1], dq = r.acc && r.acc.type === 'SIK' && r.acc.no === n;
     const pos = dq ? '失' : POS9[place++];
     const mg = i === 0 ? '' : r.margins[i - 1][0];
-    html += `<div class="rank"><span class="pos">${pos}</span>${wk(n)}<span class="rname2">${b.name}</span><span class="cls ${b.cls}">${b.cls}</span><span class="sub" style="margin-left:auto;text-align:right">${r.kim[n] && !dq ? '<b style="color:var(--cyan)">' + r.kim[n] + '</b> ' : ''}${mg}${r.story.B === n ? ' <b style="color:var(--gold)">B</b>' : ''}</span></div>`;
+    html += `<div class="rank"><span class="pos">${pos}</span>${wk(n)}<span class="rname2 rl" data-rid="${b.id}">${b.name}</span><span class="cls ${b.cls}">${b.cls}</span><span class="sub" style="margin-left:auto;text-align:right">${r.kim[n] && !dq ? '<b style="color:var(--cyan)">' + r.kim[n] + '</b> ' : ''}${mg}${r.story.B === n ? ' <b style="color:var(--gold)">B</b>' : ''}</span></div>`;
   });
-  if (r.acc && r.acc.type !== 'SIK') { const b = r.riders[r.acc.no - 1]; html += `<div class="rank"><span class="pos">${r.acc.type === 'KET' ? '欠' : '落'}</span>${wk(r.acc.no)}<span class="rname2">${b.name}</span><span class="sub" style="margin-left:auto">${ACC[r.acc.type]}</span></div>`; }
+  if (r.acc && r.acc.type !== 'SIK') { const b = r.riders[r.acc.no - 1]; html += `<div class="rank"><span class="pos">${r.acc.type === 'KET' ? '欠' : '落'}</span>${wk(r.acc.no)}<span class="rname2 rl" data-rid="${b.id}">${b.name}</span><span class="sub" style="margin-left:auto">${ACC[r.acc.type]}</span></div>`; }
   $('ranks').innerHTML = html;
   let note = '<div class="note" style="color:var(--muted);background:var(--panel2)">並び　' + r.lines.map(l => l.join('-')).join(' / ') + '　（B＝最終バック先頭）</div>';
   if (r.acc && r.acc.type === 'KET') note += `<div class="note">${r.acc.no}番 欠車。${r.acc.no}番を含む車券は全額返還です。</div>`;
   if (r.acc && r.acc.type === 'RAK') note += `<div class="note">${r.acc.no}番 最終4コーナーで落車（着外・返還なし）。</div>`;
   if (r.acc && r.acc.type === 'SIK') note += `<div class="note">${r.acc.no}番 失格（審議の結果、着順から除外。返還なし）。後続の着順は繰り上がりです。</div>`;
   if (r.margins[0] && r.margins[0][1] <= 0.35) note += `<div class="note">写真判定の結果、1着と2着の差は${r.margins[0][0]}。</div>`;
+  if (res.news) { const ups = res.news.list.filter(m => clsUp(m.from, m.to));
+    const hi = ups.filter(m => m.to === 'SS' || (m.to === 'S2' && m.from === 'A1')).map(m => `${World.get(m.id).name}（${m.from}→${m.to}）`);
+    note += `<div class="note" style="color:var(--gold)">📣 期替わり！ 第${res.news.period}期の級班が決まりました。昇級${ups.length}人・降級${ups.length}人。${hi.length ? '<br>' + hi.slice(0, 6).join('、') : ''}<br><button class="chip" id="newsRoster" style="margin-top:6px">👤 選手名鑑で見る</button></div>`; }
   $('rNote').innerHTML = note;
+  if (res.news) $('newsRoster').onclick = () => showRoster('SS');
   const win = ENG.winKeys(r);
   $('payouts').innerHTML = BT.map(bt => win[bt.id].map((k, i) => { const o = r.odds[bt.id][k]; const pop = Object.values(r.odds[bt.id]).filter(v => v < o).length + 1;
     return `<tr><td>${i === 0 ? bt.name : ''}</td><td>${k}</td><td class="num odds">${yen(ENG.per100(o))}円</td><td class="num sub">${pop}人気</td></tr>`; }).join('')).join('');
@@ -1134,6 +1311,8 @@ function showStats() {
   $('resetStats').onclick = () => confirmBox('成績をリセットしますか？　所持金はそのままです。', 'リセットする', () => { S.stats = newStats(); S.broke = 0; if (mode === 'rich') S.maxAsset = S.bal; saveMode(); toast('成績をリセットしました'); });
 }
 $('statsBtn').onclick = showStats;
+$('rosterOpen').onclick = () => showRoster('SS');
+$('rosterBtn').onclick = () => showRoster('SS');
 $('dayRestart').onclick = () => confirmBox('今の挑戦をやめて、新しい12レースで最初からやり直しますか？　今回の所持金は記録されません。', 'やり直す', () => { S.groups = []; restartDay(); });
 
 // ===== 効果音（Web Audioで合成。音声ファイルなし） =====
@@ -1177,6 +1356,72 @@ const Sound = {
 };
 function renderSnd() { $('sndBtn').textContent = Sound.on ? '🔊' : '🔇'; $('sndBtn').title = Sound.on ? '効果音：オン' : '効果音：オフ'; }
 $('sndBtn').onclick = () => { Sound.set(!Sound.on); toast(Sound.on ? '効果音オン（マナーモードだと鳴らないことがあります）' : '効果音オフ'); };
+
+// ===== 選手ページ・選手名鑑 =====
+const clsUp = (from, to) => World.ORDER.indexOf(to) < World.ORDER.indexOf(from);
+const PLACE_C = p => p === 1 ? 'p1' : p === 2 ? 'p2' : p === 3 ? 'p3' : typeof p === 'string' ? 'px' : '';
+function spark(vals) {
+  if (vals.length < 2) return '<div class="empty">期替わりのたびに記録されます</div>';
+  const mn = Math.min(...vals), mx = Math.max(...vals), rg = Math.max(1, mx - mn), Wd = 300, Ht = 60;
+  const pts = vals.map((v, i) => `${(i / (vals.length - 1) * (Wd - 16) + 8).toFixed(1)},${(Ht - 8 - (v - mn) / rg * (Ht - 16)).toFixed(1)}`);
+  const last = pts[pts.length - 1].split(',');
+  return `<svg viewBox="0 0 ${Wd} ${Ht}" class="spark"><polyline points="${pts.join(' ')}" fill="none" stroke="#f2c94c" stroke-width="2"/><circle cx="${last[0]}" cy="${last[1]}" r="3.5" fill="#f2c94c"/></svg>
+    <div class="sparkax"><span>第1期〜</span><span>最低 ${mn.toFixed(2)} ・ 最高 ${mx.toFixed(2)} ・ 今 ${vals[vals.length - 1].toFixed(2)}</span></div>`;
+}
+function showRider(id, back) {
+  const R = World.get(id), cur = World.period();
+  const rankIn = World.ROSTER.map(x => World.get(x.id)).filter(x => x.c === R.c).sort((a, b) => b.s - a.s).findIndex(x => x.id === id) + 1;
+  const pc = v => R.st ? (v / R.st * 100).toFixed(1) + '%' : '—';
+  const moved = R.ch.length && R.ch[R.ch.length - 1][0] === cur - 1 ? R.ch[R.ch.length - 1] : null;
+  const partners = Object.entries(R.P).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const kimTot = R.k.reduce((a, b) => a + b, 0);
+  let h = `<h3><span>${R.name}</span><button class="ibtn" data-close>閉じる</button></h3>
+    <div class="rhead"><span class="cls ${R.c}">${R.c}</span><b style="color:${TYPE_C[R.type]}">${{ '逃': '逃げ', '両': '両', '追': '追込' }[R.type]}</b>
+      <span>${R.pref}（${R.area}）</span><span>${R.age}歳 ${R.ki}期</span><span>ギヤ ${R.gear}</span>
+      ${moved ? `<span class="mv ${clsUp(moved[1], moved[2]) ? 'up' : 'dn'}">${clsUp(moved[1], moved[2]) ? '▲昇級' : '▼降級'}</span>` : ''}</div>
+    <div class="kv">
+      <div><small>競走得点</small><b>${R.s.toFixed(2)}</b><small>${R.c}の中で ${rankIn}位 / ${World.ROSTER.filter(x => World.get(x.id).c === R.c).length}人</small></div>
+      <div><small>通算成績</small><b>${R.st}戦 ${R.w[0]}勝</b><small>${R.w[0]}-${R.w[1]}-${R.w[2]}-${R.o}</small></div>
+      <div><small>勝率 ／ 2連対率</small><b>${pc(R.w[0])}</b><small>2連対 ${pc(R.w[0] + R.w[1])} ・ 3連対 ${pc(R.w[0] + R.w[1] + R.w[2])}</small></div>
+      <div><small>バック回数 ／ 落車・失格</small><b>B${R.b}</b><small>落車・失格 ${R.a}回</small></div>
+    </div>
+    <h2>1着の決まり手</h2>
+    <div class="kimrow">${World.KIM.map((k, i) => `<div><small>${k}</small><b>${R.k[i]}</b></div>`).join('')}</div>
+    ${kimTot ? `<div class="kimbar">${World.KIM.map((k, i) => R.k[i] ? `<span style="flex:${R.k[i]};background:${['#ff6b6b', '#f2c94c', '#5fd0e6', '#4cd38a'][i]}"></span>` : '').join('')}</div>` : ''}
+    <h2>直近10走 <small style="font-weight:400">（左が新しい）</small></h2>
+    ${R.L.length ? `<div class="recent">${R.L.map(e => `<div class="rc"><span class="pl ${PLACE_C(e[0])}">${e[0]}${typeof e[0] === 'number' ? '着' : ''}</span><small>${e[1]}</small>${e[2] ? `<small class="km">${e[2]}</small>` : ''}</div>`).join('')}</div>` : '<div class="empty">まだ出走していません</div>'}
+    <h2>競走得点の推移</h2>${spark([...R.h, R.s])}
+    <h2>よく連係する選手</h2>
+    ${partners.length ? partners.map(([pid, n]) => { const p = World.get(+pid); return `<div class="prow" data-rid="${pid}" data-back="${back || ''}"><span class="cls ${p.c}">${p.c}</span><span class="rl">${p.name}</span><small>${p.pref}</small><small style="margin-left:auto">${n}回</small></div>`; }).join('') : '<div class="empty">まだ連係していません</div>'}
+    <h2>級班の履歴</h2>
+    ${R.ch.length ? R.ch.slice(-8).reverse().map(c => `<div class="prow"><small>第${c[0]}期 → 第${c[0] + 1}期</small><span>${c[1]} → ${c[2]}</span><span class="mv ${clsUp(c[1], c[2]) ? 'up' : 'dn'}" style="margin-left:auto">${clsUp(c[1], c[2]) ? '▲昇級' : '▼降級'}</span></div>`).join('') : `<div class="empty">第1期から ${R.c} のまま</div>`}`;
+  h += `<div class="btnrow"><button class="btn ghost sm" id="toRoster">👤 選手名鑑${back ? 'に戻る' : 'を見る'}</button></div>`;
+  openModal(h);
+  $('sheetBox').scrollTop = 0;
+  $('toRoster').onclick = () => showRoster(back || R.c);
+}
+function showRoster(cls = 'SS') {
+  const cur = World.period(), all = World.ROSTER.map(x => World.get(x.id));
+  const list = all.filter(x => x.c === cls).sort((a, b) => b.s - a.s);
+  const news = World.news();
+  const nUp = news ? news.list.filter(m => clsUp(m.from, m.to)).length : 0;
+  let h = `<h3>👤 選手名鑑 <button class="ibtn" data-close>閉じる</button></h3>
+    <p class="hint">第${cur}期 ・ 次の級班の入れ替えまで あと${World.left()}レース<br>あなたが遊んだ${World.PERIOD}レースごとに期が替わり、各級班の得点上位が昇級・下位が降級します（SSはS1の上位がSSの下位を上回ったときだけ入れ替え）。</p>
+    ${news ? `<div class="note">第${news.period}期の級班が決まりました（昇級・降級 各${nUp}人）。▲▼が今期上がった・下がった選手です。</div>` : ''}
+    <div class="ctabs">${World.ORDER.map(c => `<button class="tab ${c === cls ? 'on' : ''}" data-cls="${c}">${c}<small>${all.filter(x => x.c === c).length}人</small></button>`).join('')}</div>
+    <table class="roster"><thead><tr><th>順</th><th>選手</th><th class="num">得点</th><th class="num">成績</th></tr></thead><tbody>
+    ${list.map((x, i) => { const mv = x.ch.length && x.ch[x.ch.length - 1][0] === cur - 1 ? x.ch[x.ch.length - 1] : null;
+      return `<tr data-rid="${x.id}" data-back="${cls}"><td class="px">${i + 1}</td><td><span class="rl">${x.name}</span>${mv ? `<span class="mv ${clsUp(mv[1], mv[2]) ? 'up' : 'dn'}">${clsUp(mv[1], mv[2]) ? '▲' : '▼'}</span>` : ''}<span class="sub">${x.pref} <b style="color:${TYPE_C[x.type]}">${x.type}</b> ${x.ki}期</span></td><td class="num odds">${x.s.toFixed(2)}</td><td class="num">${x.w[0]}勝<span class="sub">${x.st}戦</span></td></tr>`; }).join('')}
+    </tbody></table>
+    <button class="btn ghost sm" id="worldReset" style="margin-top:14px">選手の成績と級班を最初に戻す</button>`;
+  openModal(h);
+  $('sheetBox').querySelector('.ctabs').onclick = e => { const b = e.target.closest('[data-cls]'); if (b) showRoster(b.dataset.cls); };
+  $('worldReset').onclick = () => confirmBox('500人全員の成績・得点・級班を最初の状態に戻しますか？　所持金や車券の成績はそのままです。', '戻す', () => { World.reset(); toast('選手データを最初に戻しました'); showRoster('SS'); });
+}
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-rid]'); if (!el) return;
+  showRider(+el.dataset.rid, el.dataset.back || '');
+});
 
 // ===== Xにシェア =====
 function shareX(text) {
