@@ -3,8 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>あかつき車券 競輪ゲーム</title>
+<title>ポケット車券 競輪ゲーム</title>
 <meta name="description" content="架空の競輪場で遊ぶ車券ゲーム。ライン戦・ジャン・捲りを再現したドット絵レースで、1日モードのランキングに挑戦。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ポケット車券">
+<meta property="og:description" content="架空のバンクで遊ぶドット絵の競輪ゲーム。5万円で12レース、1日ランキングに挑戦。">
+<meta property="og:url" content="https://yukiyuki071103-hash.github.io/keirin/keirin.html">
+<meta property="og:image" content="https://yukiyuki071103-hash.github.io/keirin/keirin-ogp.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 <style>
@@ -67,6 +75,7 @@ td.num,th.num{text-align:right;white-space:nowrap}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line);font-weight:600}
 .btn.cyan{background:var(--cyan);color:#06222a}
 .btn.sm{padding:9px;font-size:14px;min-height:40px}
+.btn.xshare{background:#000;color:#fff;border:1px solid #555}
 .grp{border-bottom:1px dashed var(--line);padding:8px 0}
 .grp:last-child{border-bottom:0}
 .grp .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer}
@@ -144,6 +153,7 @@ canvas.cmc{width:100%;image-rendering:pixelated;border-radius:10px;display:block
   <header>
     <h1 id="hTitle" title="タイトルへ"></h1>
     <span class="modechip hidden" id="modeChip"></span>
+    <button class="ibtn" id="sndBtn" aria-label="効果音"></button>
     <button class="ibtn hidden" id="statsBtn">成績</button>
     <div class="bal hidden" id="balBox"><b id="bal">0</b>円</div>
   </header>
@@ -233,6 +243,7 @@ canvas.cmc{width:100%;image-rendering:pixelated;border-radius:10px;display:block
       <h2 style="margin-top:12px">あなたの収支</h2>
       <div id="myResult"></div>
       <div class="yoso" style="margin-top:10px"><canvas id="face2" width="16" height="16"></canvas><div class="bubble" id="yReact"></div></div>
+      <button class="btn sm xshare hidden" id="shareHit" style="margin-top:12px">𝕏 的中をポストする</button>
       <button class="btn" id="nextBtn" style="margin-top:12px">次のレースへ ▶</button>
     </div>
   </section>
@@ -608,7 +619,7 @@ const RaceView = (() => {
     const P=plan(race), s=race.story, ln=s.lines;
     const said={}; const say=(k,txt)=>{ if(said[k]) return; said[k]=1; hooks.comm(txt); };
     const narab=ln.map(l=>l.join('-')).join(' / ');
-    let cam=-LW/SC*0.6, t0=null, stopped=false, raf;
+    let cam=-LW/SC*0.6, t0=null, stopped=false, raf, lastBell=-9; const sfxDone={};
     const photo = race.margins[0] && race.margins[0][1]<=0.35;
     const endT=37.6+0.2+(photo?1.6:0)+(race.acc&&race.acc.type==='SIK'?1.6:0);
     const lead=s.lines[s.A][0], Mlead=s.M>=0?s.lines[s.M][0]:null;
@@ -634,6 +645,9 @@ const RaceView = (() => {
       if(race.acc&&race.acc.type==='SIK'&&t>=37.05+(photo?1.6:0)) say('k',`審議ランプ点灯… ${race.acc.no}番 失格`);
       // 周回・位置
       const h=H(t), rem=Math.max(0,Math.ceil((GOAL-h)/400-1e-6));
+      if(hooks.sfx){ if(!sfxDone.gun){ sfxDone.gun=1; hooks.sfx('gun'); }
+        if(h>=1425&&h<1625&&t-lastBell>=0.3){ lastBell=t; hooks.sfx('bell'); }
+        if(t>=33.5&&!sfxDone.roar){ sfxDone.roar=1; hooks.sfx('roar'); } }
       let st= t<5.6?'スタート': h<1225?'残り'+rem+'周': h<1425?'赤板': h<1625?'🔔 ジャン': h<1825?'最終ホーム': h<1905?'最終バック': h<GOAL?'最終4角〜直線':'ゴール';
       const rk=P.nos.filter(n=>n!==P.crash||t<33.3).map(n=>({n,x:state(P,n,t).x})).sort((a,b)=>b.x-a.x).map(r=>r.n);
       let txt='', prevL=-1; rk.forEach(n=>{ const l=P.lineOf(n); txt+= (prevL!==-1 && l!==prevL ? ' | ':' ')+n; prevL=l; });
@@ -729,9 +743,11 @@ const Net = {
 };
 // ===== 表示名（ここを変えれば全体に反映） =====
 const CONFIG = {
-  GAME_NAME: 'あかつき車券',
-  GAME_SUB: 'あかつきバンクの競輪ゲーム',
-  VENUE: 'あかつきバンク',
+  GAME_NAME: 'ポケット車券',
+  GAME_SUB: 'ポケットバンクの競輪ゲーム',
+  VENUE: 'ポケットバンク',
+  SHARE_URL: 'https://yukiyuki071103-hash.github.io/keirin/keirin.html',
+  HASHTAG: 'ポケット車券',
   YOSO_NAME: 'ジャンさん',
   CURRENCY: '円',
   DEFAULT_PLAYER: '名無しの車券師',
@@ -747,16 +763,16 @@ const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeo
 
 // ===== モード =====
 const MODES = {
-  day:    { key: 'keirin_day_v1',    name: '1日モード',     start: 30000,  chips: [100, 1000, 5000], all: false },
+  day:    { key: 'keirin_day_v1',    name: '1日モード',     start: 50000,  chips: [100, 1000, 5000], all: false },
   rich:   { key: 'keirin_rich_v1',   name: '富豪モード',     start: 1e8,    chips: [1e5, 1e6, 1e7],  all: true },
-  simple: { key: 'keirin_simple_v1', name: 'シンプルモード', start: 100000, chips: [100, 1000, 10000], all: false },
+  simple: { key: 'keirin_simple_v1', name: '人生モード', start: 100000, chips: [100, 1000, 10000], all: false },
 };
 const chipLabel = v => v >= 1e4 ? '+' + (v / 1e4).toLocaleString() + '万' : '+' + v.toLocaleString();
 const newStats = () => ({ races: 0, hitRaces: 0, spent: 0, paid: 0, refund: 0, byType: {}, best: null, hist: [], yoso: { n: 0, hits: 0 } });
 const randSeed = () => Math.random().toString(36).slice(2, 10);
 
 const newDay = (date, attempt) => ({ date, attempt, seed: randSeed(), finished: false, hits: 0, best: null, submitted: null });
-function restartDay() { S.day = newDay(jstDate(), (S.day.attempt || 1) + 1); S.bal = 30000; S.raceNo = 1; S.groups = []; S.racing = false; saveMode(); toBet(); window.scrollTo({ top: 0 }); toast(`${S.day.attempt}回目の挑戦。新しい12レースです`); }
+function restartDay() { S.day = newDay(jstDate(), (S.day.attempt || 1) + 1); S.bal = MODES.day.start; S.raceNo = 1; S.groups = []; S.racing = false; saveMode(); toBet(); window.scrollTo({ top: 0 }); toast(`${S.day.attempt}回目の挑戦。新しい12レースです`); }
 function loadMode(m) {
   let s = null;
   try { s = JSON.parse(localStorage.getItem(MODES[m].key) || 'null'); } catch (e) {}
@@ -766,7 +782,7 @@ function loadMode(m) {
   if (m === 'day') {
     const today = jstDate();
     if (s.day && !s.day.seed) s.day.seed = randSeed();
-    if (!s.day || s.day.date !== today) { s.day = newDay(today, 1); s.bal = 30000; s.raceNo = 1; s.groups = []; s.racing = false; }
+    if (!s.day || s.day.date !== today) { s.day = newDay(today, 1); s.bal = MODES.day.start; s.raceNo = 1; s.groups = []; s.racing = false; }
   }
   return s;
 }
@@ -942,14 +958,14 @@ function checkBroke() {
   if (!broke) return;
   if (mode === 'day') { b.textContent = '資金が尽きました。本日の結果を見る'; b.onclick = () => { S.day.finished = true; saveMode(); showDaySummary(); }; }
   else if (mode === 'rich') { b.textContent = '💰 1億円で再スタート'; b.onclick = () => { S.bal = 1e8; saveMode(); renderBal(); checkBroke(); toast('1億円で再スタートしました'); }; }
-  else { b.textContent = `💸 破産… 100,000円で再スタート（${(S.broke || 0) + 1}回目の破産）`; b.onclick = () => { S.broke = (S.broke || 0) + 1; S.bal = MODES.simple.start; saveMode(); renderBal(); checkBroke(); toast(`破産${S.broke}回目。100,000円で再スタートします`); }; }
+  else { b.textContent = `💸 破産… 人生やり直し（${(S.broke || 0) + 2}回目の人生）`; b.onclick = () => { S.broke = (S.broke || 0) + 1; S.bal = MODES.simple.start; saveMode(); renderBal(); checkBroke(); toast(`${S.broke + 1}回目の人生。${yen(MODES.simple.start)}円からやり直し`); }; }
 }
 
 // ===== レース =====
 $('startBtn').onclick = () => {
   if (phase !== 'bet') return;
   if (!S.groups.length) { toast('車券を1点以上買ってください'); return; }
-  phase = 'race'; S.racing = true; saveMode();
+  phase = 'race'; S.racing = true; saveMode(); Sound.ensure();
   ['betCard', 'entryCard', 'yosoCard', 'startBtn', 'reviveBtn', 'dayRestart'].forEach(id => $(id).classList.add('hidden'));
   renderTickets();
   $('raceCard').classList.remove('hidden'); $('ovl').classList.add('hidden'); $('skipBtn').classList.remove('hidden');
@@ -957,11 +973,11 @@ $('startBtn').onclick = () => {
   const groups = S.groups.map(g => ({ ...g })), r = race;
   $('stl').textContent = '並び　' + r.lines.map(l => l.join('-')).join(' / ');
   running = RaceView.start(r, $('cv'), {
-    comm: s => $('comm').textContent = s, live: s => $('live').textContent = s,
+    comm: s => $('comm').textContent = s, live: s => $('live').textContent = s, sfx: n => Sound.play(n),
     done: () => { $('skipBtn').classList.add('hidden'); showOverlay(r); setTimeout(() => showResult(settle(r, groups)), 1600); },
   });
 };
-$('skipBtn').onclick = () => running && running.skip();
+$('skipBtn').onclick = () => { Sound.stop(); running && running.skip(); };
 function showOverlay(r) {
   const o = $('ovl'); o.classList.remove('hidden');
   o.innerHTML = `<div class="kim">${r.kimW}</div><div class="ordline">${r.order.slice(0, 3).map(wk).join('')}</div>`;
@@ -995,10 +1011,14 @@ function showResult(res) {
   $('yReact').innerHTML = res.yHit ? `<b>ほらな！</b> ワシの言うた通りや。（推奨 ${r.yoso.picks.join(' ')}）` : `…次や次。（推奨 ${r.yoso.picks.join(' ')}）`;
   drawFace($('face2'));
   renderTickets(res); renderBal();
+  const hits = res.groups.flatMap(g => g.keys.filter(k => g.st[k] === 'win').map(k => ({ amt: ENG.payout(g.unit, g.odds[k]), name: btById(g.bt).name, key: k }))).sort((a, b) => b.amt - a.amt);
+  $('shareHit').classList.toggle('hidden', !hits.length);
+  $('shareHit').onclick = () => { const h = hits[0];
+    shareX(`${CONFIG.GAME_NAME} ${MODES[mode].name} ${r.label}\n${h.name} ${h.key} 的中！ 払戻 ${yen(h.amt)}円` + (r.kimW ? `（決まり手 ${r.kimW}）` : '')); };
   $('nextBtn').textContent = res.wasFinal ? '🏆 1日の結果を見る' : '次のレースへ ▶';
   $('resultCard').classList.remove('hidden');
   setTimeout(() => $('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
-  if (mode === 'rich' && res.pay >= 1e6) jackpot();
+  if (mode === 'rich' && res.pay >= 1e6) { jackpot(); Sound.play('jackpot'); } else if (res.pay > 0) Sound.play('win');
 }
 $('nextBtn').onclick = () => {
   if (lastResult && lastResult.wasFinal) { showDaySummary(); return; }
@@ -1059,13 +1079,16 @@ async function submitDay() {
   catch (e) { if (note()) note().textContent = 'ランキングに記録できませんでした。この画面を開き直すと再送します。'; }
 }
 async function showDaySummary() {
-  const d = S.day, diff = S.bal - 30000;
+  const d = S.day, diff = S.bal - MODES.day.start;
   openModal(`<h3>🏆 本日の結果 <button class="ibtn" data-close>閉じる</button></h3>
     <div class="kv"><div><small>最終所持金</small><b>${yen(S.bal)}円</b></div><div><small>1日の収支</small><b style="color:${diff >= 0 ? 'var(--gold)' : 'var(--muted)'}">${diff >= 0 ? '+' : ''}${yen(diff)}円</b></div>
     <div><small>的中したレース</small><b>${d.hits}R</b></div><div><small>最高払戻</small><b>${d.best ? yen(d.best.amt) + '円' : '—'}</b>${d.best ? `<small>${d.best.race} ${d.best.type} ${d.best.key}</small>` : ''}</div></div>
     <div class="note" id="subNote">ランキングに記録しています…</div>
+    <button class="btn sm xshare" id="shareDay" style="margin-bottom:10px">𝕏 結果をポストする</button>
     <div id="rankBox"></div>
     <div class="btnrow"><button class="btn cyan sm" id="practice">もう一度挑戦</button><button class="btn ghost sm" id="toTitle">タイトルへ</button></div>`);
+  $('shareDay').onclick = () => { const md = d.date.slice(5).replace('-', '/').replace(/^0/, '');
+    shareX(`${CONFIG.GAME_NAME} 1日モード（${md}）\n最終所持金 ${yen(S.bal)}円（${diff >= 0 ? '+' : ''}${yen(diff)}円）\n的中 ${d.hits}R` + (d.best ? `・最高払戻 ${yen(d.best.amt)}円` : '')); };
   $('practice').onclick = () => { closeModal(); restartDay(); };
   $('toTitle').onclick = () => { closeModal(); showTitle(); };
   await submitDay();
@@ -1098,7 +1121,7 @@ function showStats() {
     html += `<div class="kv"><div><small>自己最高資産</small><b>${yen(S.maxAsset || 1e8)}円</b></div><div><small>現在の資産</small><b>${yen(S.bal)}円</b></div></div>` + best;
   } else {
     const net = s.spent - s.refund;
-    if (mode === 'simple') html += `<div class="note">破産回数：<b>${S.broke || 0}回</b></div>`;
+    if (mode === 'simple') html += `<div class="note">人生のやり直し：<b>${S.broke || 0}回</b>（いま${(S.broke || 0) + 1}回目の人生）</div>`;
     html += `<div class="kv"><div><small>レース数</small><b>${s.races}</b></div><div><small>的中率</small><b>${pct(s.hitRaces, s.races)}</b><small>${s.hitRaces}/${s.races}レース</small></div>
       <div><small>購入額合計</small><b>${yen(s.spent)}円</b></div><div><small>払戻額合計</small><b>${yen(s.paid)}円</b></div>
       <div><small>回収率</small><b>${pct(s.paid, net)}</b><small>払戻 ÷（購入−返還）</small></div><div><small>返還額合計</small><b>${yen(s.refund)}円</b></div></div>` + best
@@ -1112,6 +1135,54 @@ function showStats() {
 }
 $('statsBtn').onclick = showStats;
 $('dayRestart').onclick = () => confirmBox('今の挑戦をやめて、新しい12レースで最初からやり直しますか？　今回の所持金は記録されません。', 'やり直す', () => { S.groups = []; restartDay(); });
+
+// ===== 効果音（Web Audioで合成。音声ファイルなし） =====
+const Sound = {
+  on: (() => { try { return localStorage.getItem('keirin_sound_v1') === '1'; } catch (e) { return false; } })(),
+  ctx: null, out: null, buf: null, live: new Set(),
+  ensure() {
+    if (!this.on) return null;
+    if (!this.ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+      this.ctx = new AC(); this.out = this.ctx.createGain(); this.out.gain.value = 0.55; this.out.connect(this.ctx.destination);
+      const n = this.ctx.sampleRate * 2; this.buf = this.ctx.createBuffer(1, n, this.ctx.sampleRate); const d = this.buf.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    return this.ctx;
+  },
+  set(v) { this.on = v; try { localStorage.setItem('keirin_sound_v1', v ? '1' : '0'); } catch (e) {} if (v) { this.ensure(); this.play('bell'); } else this.stop(); renderSnd(); },
+  stop() { this.live.forEach(n => { try { n.stop(); } catch (e) {} }); this.live.clear(); },
+  src(node, t0, t1) { this.live.add(node); node.onended = () => this.live.delete(node); node.start(t0); node.stop(t1); },
+  env(t0, peak, atk, dec) { const g = this.ctx.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + atk); g.gain.exponentialRampToValueAtTime(0.0001, t0 + atk + dec); return g; },
+  tone(type, f, t0, peak, atk, dec) { const c = this.ctx, o = c.createOscillator(), g = this.env(t0, peak, atk, dec); o.type = type; o.frequency.value = f; o.connect(g).connect(this.out); this.src(o, t0, t0 + atk + dec + 0.05); return o; },
+  noise(t0, dur, fType, f, q) { const c = this.ctx, s = c.createBufferSource(); s.buffer = this.buf; s.loop = true; const fl = c.createBiquadFilter(); fl.type = fType; fl.frequency.value = f; fl.Q.value = q; s.connect(fl); this.src(s, t0, t0 + dur); return fl; },
+  play(name) {
+    if (!this.on || !this.ensure()) return;
+    const c = this.ctx, t = c.currentTime + 0.01;
+    if (name === 'gun') {        // 号砲
+      const g = this.env(t, 0.9, 0.003, 0.4); this.noise(t, 0.5, 'bandpass', 900, 0.6).connect(g).connect(this.out);
+      const o = this.tone('sine', 120, t, 0.7, 0.003, 0.25); o.frequency.exponentialRampToValueAtTime(45, t + 0.25);
+    } else if (name === 'bell') { // ジャンの鐘
+      this.tone('triangle', 1480, t, 0.35, 0.002, 0.28); this.tone('sine', 3330, t, 0.12, 0.002, 0.14); this.tone('sine', 2210, t, 0.08, 0.002, 0.2);
+    } else if (name === 'roar') { // 最後の直線の歓声（約4秒で最高潮、ゴール後に引く）
+      const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.32, t + 3.6); g.gain.setValueAtTime(0.32, t + 3.9); g.gain.exponentialRampToValueAtTime(0.0001, t + 6.5);
+      this.noise(t, 6.6, 'bandpass', 700, 0.4).connect(g).connect(this.out);
+      const g2 = c.createGain(); g2.gain.setValueAtTime(0.0001, t); g2.gain.exponentialRampToValueAtTime(0.12, t + 3.6); g2.gain.exponentialRampToValueAtTime(0.0001, t + 6);
+      this.noise(t, 6.6, 'bandpass', 1900, 1.2).connect(g2).connect(this.out);
+    } else if (name === 'win') {  // 的中
+      [523, 659, 784, 1047].forEach((f, i) => this.tone('square', f, t + i * 0.09, 0.09, 0.005, i === 3 ? 0.4 : 0.1));
+    } else if (name === 'jackpot') { // 大当たり
+      [523, 659, 784, 1047, 784, 1047, 1319, 1568].forEach((f, i) => this.tone('square', f, t + i * 0.11, 0.09, 0.005, i === 7 ? 0.8 : 0.12));
+      [262, 392, 523].forEach(f => this.tone('triangle', f, t + 0.77, 0.12, 0.01, 1.0));
+    }
+  },
+};
+function renderSnd() { $('sndBtn').textContent = Sound.on ? '🔊' : '🔇'; $('sndBtn').title = Sound.on ? '効果音：オン' : '効果音：オフ'; }
+$('sndBtn').onclick = () => { Sound.set(!Sound.on); toast(Sound.on ? '効果音オン（マナーモードだと鳴らないことがあります）' : '効果音オフ'); };
+
+// ===== Xにシェア =====
+function shareX(text) {
+  const u = 'https://x.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(CONFIG.SHARE_URL) + '&hashtags=' + encodeURIComponent(CONFIG.HASHTAG);
+  const w = window.open(u, '_blank'); if (!w) location.href = u;
+}
 
 // ===== モーダル・トースト =====
 let modalLock = false;
@@ -1167,9 +1238,9 @@ function showTitle() {
   const dToday = d && d.day && d.day.date === today;
   const dTxt = !dToday ? '今日はまだ遊んでいません' : d.day.finished ? `${d.day.attempt}回目終了（${yen(d.bal)}円）・もう一度挑戦できます` : `${d.day.attempt}回目 ${d.raceNo}R目 ／ 所持金 ${yen(d.bal)}円`;
   $('modeList').innerHTML = `
-    <button class="mode day" data-mode="day"><div class="mt">1日モード <small>軍資金 30,000円</small></div><p>30,000円で12レース（7RからS級、12RはS級決勝）。挑戦するたびにレースも結果も変わり、何回でも遊べます。ランキングはその日の自己ベスト。<br><b style="color:var(--gold)">${dTxt}</b></p></button>
+    <button class="mode day" data-mode="day"><div class="mt">1日モード <small>軍資金 ${yen(MODES.day.start)}円</small></div><p>${yen(MODES.day.start)}円で12レース（7RからS級、12RはS級決勝）。挑戦するたびにレースも結果も変わり、何回でも遊べます。ランキングはその日の自己ベスト。<br><b style="color:var(--gold)">${dTxt}</b></p></button>
     <button class="mode" data-mode="rich"><div class="mt">富豪モード <small>軍資金 1億円</small></div><p>上限なし、全額勝負も可。100万円以上の的中で大当たり演出。<br><b style="color:var(--gold)">${r ? `資産 ${yen(r.bal)}円 ／ 最高 ${yen(r.maxAsset || 1e8)}円` : '未プレイ'}</b></p></button>
-    <button class="mode" data-mode="simple"><div class="mt">シンプルモード <small>軍資金 100,000円</small></div><p>気軽に延々と。破産しても100,000円で再スタート（破産回数は記録されます）。<br><b style="color:var(--gold)">${s ? `所持金 ${yen(s.bal)}円 ／ 破産 ${s.broke || 0}回` : '未プレイ'}</b></p></button>`;
+    <button class="mode" data-mode="simple"><div class="mt">人生モード <small>軍資金 100,000円</small></div><p>勝って負けて、また買う。破産しても10万円から人生やり直し（やり直した回数は記録されます）。<br><b style="color:var(--gold)">${s ? `${(s.broke || 0) + 1}回目の人生 ／ 所持金 ${yen(s.bal)}円` : '未プレイ'}</b></p></button>`;
   drawHero(); renderAccount(); window.scrollTo({ top: 0 });
 }
 $('modeList').onclick = e => { const b = e.target.closest('[data-mode]'); if (b) startMode(b.dataset.mode); };
@@ -1192,6 +1263,7 @@ $('hTitle').textContent = '🚴 ' + CONFIG.GAME_NAME;
 $('tTitle').textContent = CONFIG.GAME_NAME;
 $('tSub').textContent = CONFIG.GAME_SUB;
 Net.onChange(renderAccount);
+renderSnd();
 window.addEventListener('resize', () => { if (phase === 'race') RaceView.size(); });
 Net.init();
 showTitle();
